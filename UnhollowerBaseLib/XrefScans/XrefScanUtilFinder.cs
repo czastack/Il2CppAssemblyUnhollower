@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using Iced.Intel;
 
@@ -9,7 +10,7 @@ namespace UnhollowerRuntimeLib.XrefScans
         {
             var decoder = XrefScanner.DecoderForAddress(codeStart);
             IntPtr lastRcxRead = IntPtr.Zero;
-            
+
             while (true)
             {
                 decoder.Decode(out var instruction);
@@ -36,20 +37,20 @@ namespace UnhollowerRuntimeLib.XrefScans
                     if (instruction.Op0Kind == OpKind.Register && instruction.Op0Register == Register.ECX && instruction.Op1Kind == OpKind.Memory && instruction.IsIPRelativeMemoryOperand)
                     {
                         var movTarget = (IntPtr) instruction.IPRelativeMemoryAddress;
-                        if (instruction.MemorySize != MemorySize.UInt32 && instruction.MemorySize != MemorySize.Int32) 
+                        if (instruction.MemorySize != MemorySize.UInt32 && instruction.MemorySize != MemorySize.Int32)
                             continue;
-                        
+
                         lastRcxRead = movTarget;
                     }
                 }
             }
         }
-        
+
         public static IntPtr FindByteWriteTargetRightAfterCallTo(IntPtr codeStart, IntPtr callTarget)
         {
             var decoder = XrefScanner.DecoderForAddress(codeStart);
             var seenCall = false;
-            
+
             while (true)
             {
                 decoder.Decode(out var instruction);
@@ -78,7 +79,7 @@ namespace UnhollowerRuntimeLib.XrefScans
                 }
             }
         }
-        
+
         private static ulong ExtractTargetAddress(in Instruction instruction)
         {
             switch (instruction.Op0Kind)
@@ -99,3 +100,4 @@ namespace UnhollowerRuntimeLib.XrefScans
         }
     }
 }
+#endif

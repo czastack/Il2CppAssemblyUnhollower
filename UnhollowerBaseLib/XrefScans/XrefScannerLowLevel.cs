@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.Collections.Generic;
 using Iced.Intel;
@@ -84,3 +85,4 @@ namespace UnhollowerRuntimeLib.XrefScans
         }
     }
 }
+#endif

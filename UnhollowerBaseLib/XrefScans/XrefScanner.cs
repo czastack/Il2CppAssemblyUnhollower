@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,18 +18,18 @@ namespace UnhollowerRuntimeLib.XrefScans
         {
             var fieldValue = UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(methodBase)?.GetValue(null);
             if (fieldValue == null) return Enumerable.Empty<XrefInstance>();
-            
+
             var cachedAttribute = methodBase.GetCustomAttribute<CachedScanResultsAttribute>(false);
             if (cachedAttribute == null)
             {
                 XrefScanMetadataRuntimeUtil.CallMetadataInitForMethod(methodBase);
-                
+
                 return XrefScanImpl(DecoderForAddress(*(IntPtr*) (IntPtr) fieldValue));
             }
 
             if (cachedAttribute.XrefRangeStart == cachedAttribute.XrefRangeEnd)
                 return Enumerable.Empty<XrefInstance>();
-            
+
             XrefScanMethodDb.CallMetadataInitForMethod(cachedAttribute);
 
             return XrefScanMethodDb.CachedXrefScan(cachedAttribute).Where(it => it.Type == XrefType.Method || XrefGlobalClassFilter(it.Pointer));
@@ -46,7 +47,7 @@ namespace UnhollowerRuntimeLib.XrefScans
         internal static unsafe Decoder DecoderForAddress(IntPtr codeStart, int lengthLimit = 1000)
         {
             if (codeStart == IntPtr.Zero) throw new NullReferenceException(nameof(codeStart));
-            
+
             var stream = new UnmanagedMemoryStream((byte*) codeStart, lengthLimit, lengthLimit, FileAccess.Read);
             var codeReader = new StreamCodeReader(stream);
             var decoder = Decoder.Create(IntPtr.Size * 8, codeReader);
@@ -75,7 +76,7 @@ namespace UnhollowerRuntimeLib.XrefScans
                         yield return new XrefInstance(XrefType.Method, (IntPtr) targetAddress, (IntPtr) instruction.IP);
                     continue;
                 }
-                
+
                 if (instruction.FlowControl == FlowControl.UnconditionalBranch)
                     continue;
 
@@ -87,9 +88,9 @@ namespace UnhollowerRuntimeLib.XrefScans
                         if (instruction.Op1Kind == OpKind.Memory && instruction.IsIPRelativeMemoryOperand)
                         {
                             var movTarget = (IntPtr) instruction.IPRelativeMemoryAddress;
-                            if (instruction.MemorySize != MemorySize.UInt64) 
+                            if (instruction.MemorySize != MemorySize.UInt64)
                                 continue;
-                            
+
                             if (skipClassCheck || XrefGlobalClassFilter(movTarget))
                                 result = new XrefInstance(XrefType.Global, movTarget, (IntPtr) instruction.IP);
                         }
@@ -143,3 +144,4 @@ namespace UnhollowerRuntimeLib.XrefScans
         }
     }
 }
+#endif

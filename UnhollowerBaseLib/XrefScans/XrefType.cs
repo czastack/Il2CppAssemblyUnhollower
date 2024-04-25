@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 namespace UnhollowerRuntimeLib.XrefScans
 {
     public enum XrefType
@@ -6,3 +7,4 @@ namespace UnhollowerRuntimeLib.XrefScans
         Method,
     }
 }
+#endif

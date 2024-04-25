@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -86,7 +87,7 @@ namespace UnhollowerRuntimeLib
                 return UnityVersionHandler.Wrap((Il2CppClass*)classPointer);
             }).ToArray());
         }
-        
+
         public static void RegisterTypeInIl2CppImpl(Type type, bool logSuccess, params INativeClassStruct[] interfaces)
         {
             if(type == null)
@@ -578,7 +579,7 @@ namespace UnhollowerRuntimeLib
                 if (monoMethod.ReturnType.IsValueType)
                 {
                     if(monoMethod.ReturnType.IsPrimitive)
-                    { 
+                    {
                         if(monoMethod.ReturnType == typeof(float))
                             body.Emit(OpCodes.Ldc_R4, 0);
                         else if (monoMethod.ReturnType == typeof(double))
@@ -808,3 +809,4 @@ namespace UnhollowerRuntimeLib
         T Detour<T>(IntPtr from, T to) where T : Delegate;
     }
 }
+#endif

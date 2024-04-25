@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.IO;
 using System.IO.MemoryMappedFiles;
@@ -11,10 +12,10 @@ namespace UnhollowerBaseLib.Maps
         public const int Magic = 0x43584D55; // UMXC
         public const int Version = 1;
         public const string FileName = "MethodXrefScanCache.db";
-        
+
         private readonly MemoryMappedFile myMapFile;
         private readonly MemoryMappedViewAccessor myAccessor;
-        
+
         private unsafe MethodData* myData;
 
         public readonly FileHeader Header;
@@ -33,13 +34,13 @@ namespace UnhollowerBaseLib.Maps
                 myMapFile.Dispose();
                 throw new FileLoadException($"File magic mismatched for {filePath}; Expected {Magic:X}, got {Header.Magic:X}");
             }
-            
+
             if (Header.Version != Version)
             {
                 myMapFile.Dispose();
                 throw new FileLoadException($"File version mismatched for {filePath}; Expected {Version}, got {Header.Version}");
             }
-            
+
             var offset = Marshal.SizeOf<FileHeader>();
 
             unsafe
@@ -121,3 +122,4 @@ namespace UnhollowerBaseLib.Maps
         }
     }
 }
+#endif

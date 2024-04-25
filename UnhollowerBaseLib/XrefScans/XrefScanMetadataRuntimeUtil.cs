@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.Linq;
 using System.Reflection;
@@ -51,6 +52,7 @@ namespace UnhollowerRuntimeLib.XrefScans
             }
 
             return true;
-        } 
+        }
     }
 }
+#endif

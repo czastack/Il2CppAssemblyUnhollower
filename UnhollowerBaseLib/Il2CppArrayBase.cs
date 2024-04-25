@@ -12,14 +12,20 @@ namespace UnhollowerBaseLib
             var nativeClassPtr = Il2CppClassPointerStore<T>.NativeClassPtr;
             if (nativeClassPtr == IntPtr.Zero)
                 return;
-            
+
             var targetClassType = IL2CPP.il2cpp_array_class_get(nativeClassPtr, 1);
             if (targetClassType == IntPtr.Zero)
                 return;
-            
-            ClassInjector.WriteClassPointerForType(ownType, targetClassType);
-            ClassInjector.WriteClassPointerForType(typeof(Il2CppArrayBase<T>), targetClassType);
+
+            WriteClassPointerForType(ownType, targetClassType);
+            WriteClassPointerForType(typeof(Il2CppArrayBase<T>), targetClassType);
             Il2CppClassPointerStore<Il2CppArrayBase<T>>.CreatedTypeRedirect = ownType;
+        }
+
+        internal static void WriteClassPointerForType(Type type, IntPtr value)
+        {
+            typeof(Il2CppClassPointerStore<>).MakeGenericType(type)
+                .GetField(nameof(Il2CppClassPointerStore<int>.NativeClassPtr)).SetValue(null, value);
         }
 
         protected Il2CppArrayBase(IntPtr pointer) : base(pointer)
@@ -58,7 +64,7 @@ namespace UnhollowerBaseLib
 
         public int Count => Length;
         public bool IsReadOnly => false;
-        
+
         public int IndexOf(T item)
         {
             for (var i = 0; i < Length; i++)
@@ -79,7 +85,7 @@ namespace UnhollowerBaseLib
             var arr = new T[il2CppArray.Length];
             for (var i = 0; i < arr.Length; i++)
                 arr[i] = il2CppArray[i];
-            
+
             return arr;
         }
 
@@ -93,13 +99,13 @@ namespace UnhollowerBaseLib
         {
             if (pointer == IntPtr.Zero) return null;
 
-            if (typeof(T) == typeof(string)) 
+            if (typeof(T) == typeof(string))
                 return new Il2CppStringArray(pointer) as Il2CppArrayBase<T>;
             if (typeof(T).IsValueType) // can't construct required types here directly because of unfulfilled generic constraint
                 return Activator.CreateInstance(typeof(Il2CppStructArray<>).MakeGenericType(typeof(T)), pointer) as Il2CppArrayBase<T>;
             if (typeof(Il2CppObjectBase).IsAssignableFrom(typeof(T)))
                 return Activator.CreateInstance(typeof(Il2CppReferenceArray<>).MakeGenericType(typeof(T)), pointer) as Il2CppArrayBase<T>;
-            
+
             throw new ArgumentException($"{typeof(T)} is not a value type, not a string and not an IL2CPP object; it can't be used in IL2CPP arrays");
         }
 

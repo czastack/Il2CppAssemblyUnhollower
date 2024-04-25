@@ -27,8 +27,15 @@ namespace UnhollowerRuntimeLib
 
         public static Il2CppSystem.Type From(Type type, bool throwOnFailure)
         {
-            var pointer = ClassInjector.ReadClassPointerForType(type);
+            var pointer = ReadClassPointerForType(type);
             return TypeFromPointerInternal(pointer, type.Name, throwOnFailure);
+        }
+
+        internal static IntPtr ReadClassPointerForType(Type type)
+        {
+            if (type == typeof(void)) return Il2CppClassPointerStore<Il2CppSystem.Void>.NativeClassPtr;
+            return (IntPtr)typeof(Il2CppClassPointerStore<>).MakeGenericType(type)
+                .GetField(nameof(Il2CppClassPointerStore<int>.NativeClassPtr)).GetValue(null);
         }
 
         public static Il2CppSystem.Type Of<T>() => Of<T>(true);

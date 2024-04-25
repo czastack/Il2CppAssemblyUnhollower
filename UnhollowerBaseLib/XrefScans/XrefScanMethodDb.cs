@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,14 +15,14 @@ namespace UnhollowerRuntimeLib.XrefScans
         private static readonly MethodAddressToTokenMap MethodMap;
         private static readonly MethodXrefScanCache XrefScanCache;
         private static readonly long GameAssemblyBase;
-        
+
         private static XrefScanMetadataRuntimeUtil.InitMetadataForMethod ourMetadataInitForMethodDelegate;
 
         static XrefScanMethodDb()
         {
             MethodMap = new MethodAddressToTokenMap(GeneratedDatabasesUtil.GetDatabasePath(MethodAddressToTokenMap.FileName));
             XrefScanCache = new MethodXrefScanCache(GeneratedDatabasesUtil.GetDatabasePath(MethodXrefScanCache.FileName));
-            
+
             foreach (ProcessModule module in Process.GetCurrentProcess().Modules)
             {
                 if (module.ModuleName == "GameAssembly.dll")
@@ -48,7 +49,7 @@ namespace UnhollowerRuntimeLib.XrefScans
             for (var i = attribute.XrefRangeStart; i < attribute.XrefRangeEnd; i++)
                 yield return XrefScanCache.GetAt(i).AsXrefInstance(GameAssemblyBase);
         }
-        
+
         internal static void CallMetadataInitForMethod(CachedScanResultsAttribute attribute)
         {
             if (attribute.MetadataInitFlagRva == 0 || attribute.MetadataInitTokenRva == 0)
@@ -65,7 +66,7 @@ namespace UnhollowerRuntimeLib.XrefScans
             var token = Marshal.ReadInt32((IntPtr) (GameAssemblyBase + attribute.MetadataInitTokenRva));
 
             ourMetadataInitForMethodDelegate(token);
-            
+
             Marshal.WriteByte((IntPtr) (GameAssemblyBase + attribute.MetadataInitFlagRva), 1);
         }
 
@@ -80,3 +81,4 @@ namespace UnhollowerRuntimeLib.XrefScans
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if ENABLE_DELEGATE_SUPPORT
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -29,7 +30,7 @@ namespace UnhollowerRuntimeLib.XrefScans
             var valueAtPointer = Marshal.ReadIntPtr(Pointer);
             if (valueAtPointer == IntPtr.Zero)
                 return null;
-            
+
             return new Il2CppSystem.Object(valueAtPointer);
         }
 
@@ -41,3 +42,4 @@ namespace UnhollowerRuntimeLib.XrefScans
         }
     }
 }
+#endif
