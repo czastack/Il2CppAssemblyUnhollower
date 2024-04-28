@@ -1,3 +1,4 @@
+#if ENABLE_IL2CPP_SYSTEM
 using System;
 using Il2CppSystem.Reflection;
 using UnhollowerBaseLib;
@@ -12,7 +13,7 @@ namespace UnhollowerRuntimeLib
         {
             var reflectionType = Type.internal_from_handle(IL2CPP.il2cpp_class_get_type(enclosingClass));
             var nestedType = reflectionType.GetNestedType(nestedTypeName, BindingFlags.Public | BindingFlags.NonPublic);
-            
+
             return nestedType != null ? IL2CPP.il2cpp_class_from_system_type(nestedType.Pointer) : IntPtr.Zero;
         }
 
@@ -22,3 +23,4 @@ namespace UnhollowerRuntimeLib
         }
     }
 }
+#endif

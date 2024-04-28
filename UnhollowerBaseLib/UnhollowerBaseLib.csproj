@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net4.7.2;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>net472;netstandard2.1</TargetFrameworks>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <Version>0.4.18.0</Version>
     </PropertyGroup>
 
-    <ItemGroup>
+    <!-- <ItemGroup>
         <Reference Include="Il2Cppmscorlib, Version=3.7.1.6, Culture=neutral, PublicKeyToken=null">
             <Private>false</Private>
             <HintPath>Libs\Il2Cppmscorlib.dll</HintPath>
         </Reference>
-    </ItemGroup>
+    </ItemGroup> -->
 
     <ItemGroup>
         <Folder Include="Libs" />

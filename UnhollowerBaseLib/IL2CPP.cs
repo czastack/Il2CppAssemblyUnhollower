@@ -16,7 +16,7 @@ namespace UnhollowerBaseLib
     public static unsafe class IL2CPP
     {
         private static Dictionary<string, IntPtr> ourImagesMap = new Dictionary<string, IntPtr>();
-        
+
         static IL2CPP()
         {
             var domain = il2cpp_domain_get();
@@ -53,7 +53,7 @@ namespace UnhollowerBaseLib
                 LogSupport.Error($"Assembly {assemblyName} is not registered in il2cpp");
                 return IntPtr.Zero;
             }
-            
+
             var clazz = il2cpp_class_from_name(image, namespaze, className);
             return clazz;
         }
@@ -72,7 +72,7 @@ namespace UnhollowerBaseLib
         {
             if (clazz == IntPtr.Zero)
                 return NativeStructUtils.GetMethodInfoForMissingMethod(token.ToString());
-            
+
             IntPtr iter = IntPtr.Zero;
             IntPtr method;
             while ((method = il2cpp_class_get_methods(clazz, ref iter)) != IntPtr.Zero)
@@ -80,10 +80,10 @@ namespace UnhollowerBaseLib
                 if (il2cpp_method_get_token(method) == token)
                     return method;
             }
-            
+
             var className = Marshal.PtrToStringAnsi(il2cpp_class_get_name(clazz));
             LogSupport.Trace($"Unable to find method {className}::{token}");
-            
+
             return NativeStructUtils.GetMethodInfoForMissingMethod(className + "::" + token);
         }
 
@@ -106,18 +106,18 @@ namespace UnhollowerBaseLib
             {
                 if(Marshal.PtrToStringAnsi(il2cpp_method_get_name(method)) != methodName)
                     continue;
-                
+
                 if(il2cpp_method_get_param_count(method) != argTypes.Length)
                     continue;
-                
-                if(il2cpp_method_is_generic(method) != isGeneric) 
+
+                if(il2cpp_method_is_generic(method) != isGeneric)
                     continue;
 
                 var returnType = il2cpp_method_get_return_type(method);
                 var returnTypeNameActual = Marshal.PtrToStringAnsi(il2cpp_type_get_name(returnType));
                 if (returnTypeNameActual != returnTypeName)
                     continue;
-                
+
                 methodsSeen++;
                 lastMethod = method;
 
@@ -132,7 +132,7 @@ namespace UnhollowerBaseLib
                         break;
                     }
                 }
-                
+
                 if(badType) continue;
 
                 return method;
@@ -151,10 +151,10 @@ namespace UnhollowerBaseLib
                     var typeName = Marshal.PtrToStringAnsi(il2cpp_type_get_name(paramType));
                     LogSupport.Trace($"    {typeName} / {argTypes[i]}");
                 }
-                
+
                 return lastMethod;
             }
-            
+
             LogSupport.Trace($"Unable to find method {className}::{methodName}; signature follows");
             LogSupport.Trace($"    return {returnTypeName}");
             foreach (var argType in argTypes) LogSupport.Trace($"    {argType}");
@@ -174,7 +174,7 @@ namespace UnhollowerBaseLib
                     var typeName = Marshal.PtrToStringAnsi(il2cpp_type_get_name(paramType));
                     LogSupport.Trace($"    {typeName}");
                 }
-                
+
                 return method;
             }
 
@@ -184,17 +184,17 @@ namespace UnhollowerBaseLib
         public static string Il2CppStringToManaged(IntPtr il2CppString)
         {
             if (il2CppString == IntPtr.Zero) return null;
-            
+
             var length = il2cpp_string_length(il2CppString);
             var chars = il2cpp_string_chars(il2CppString);
-            
+
             return new string(chars, 0, length);
         }
 
         public static IntPtr ManagedStringToIl2Cpp(string str)
         {
             if(str == null) return IntPtr.Zero;
-            
+
             fixed (char* chars = str)
                 return il2cpp_string_new_utf16(chars, str.Length);
         }
@@ -203,22 +203,23 @@ namespace UnhollowerBaseLib
         {
             return obj?.Pointer ?? IntPtr.Zero;
         }
-        
+
         public static IntPtr Il2CppObjectBaseToPtrNotNull(Il2CppObjectBase obj)
         {
             return obj?.Pointer ?? throw new NullReferenceException();
         }
 
+#if ENABLE_IL2CPP_SYSTEM
         public static IntPtr GetIl2CppNestedType(IntPtr enclosingType, string nestedTypeName)
         {
             if(enclosingType == IntPtr.Zero) return IntPtr.Zero;
-            
+
             IntPtr iter = IntPtr.Zero;
             IntPtr nestedTypePtr;
             if (il2cpp_class_is_inflated(enclosingType))
             {
                 LogSupport.Trace("Original class was inflated, falling back to reflection");
-                
+
                 return RuntimeReflectionHelper.GetNestedTypeViaReflection(enclosingType, nestedTypeName);
             }
             while((nestedTypePtr = il2cpp_class_get_nested_types(enclosingType, ref iter)) != IntPtr.Zero)
@@ -226,11 +227,12 @@ namespace UnhollowerBaseLib
                 if (Marshal.PtrToStringAnsi(il2cpp_class_get_name(nestedTypePtr)) == nestedTypeName)
                     return nestedTypePtr;
             }
-            
+
             LogSupport.Error($"Nested type {nestedTypeName} on {Marshal.PtrToStringAnsi(il2cpp_class_get_name(enclosingType))} not found!");
-            
+
             return IntPtr.Zero;
         }
+#endif
 
         public static void ThrowIfNull(object arg)
         {
@@ -240,7 +242,7 @@ namespace UnhollowerBaseLib
 
         public static T ResolveICall<T>(string signature) where T : Delegate
         {
-            
+
             var icallPtr = il2cpp_resolve_icall(signature);
             if (icallPtr == IntPtr.Zero)
             {
@@ -254,7 +256,7 @@ namespace UnhollowerBaseLib
         private static T GenerateDelegateForMissingICall<T>(string signature) where T: Delegate
         {
             var invoke = typeof(T).GetMethod("Invoke")!;
-            
+
             var trampoline = new DynamicMethod("(missing icall delegate) " + typeof(T).FullName, MethodAttributes.Static, CallingConventions.Standard, invoke.ReturnType, invoke.GetParameters().Select(it => it.ParameterType).ToArray(), typeof(IL2CPP), true);
             var bodyBuilder = trampoline.GetILGenerator();
 
@@ -276,7 +278,7 @@ namespace UnhollowerBaseLib
                 else
                     objectPointer = *(IntPtr*) objectPointer;
             }
-            
+
             if (!valueTypeWouldBeBoxed && il2cpp_class_is_valuetype(Il2CppClassPointerStore<T>.NativeClassPtr))
                 objectPointer = il2cpp_value_box(Il2CppClassPointerStore<T>.NativeClassPtr, objectPointer);
 
@@ -285,7 +287,7 @@ namespace UnhollowerBaseLib
 
             if (objectPointer == IntPtr.Zero)
                 return default;
-            
+
             var nativeObject = new Il2CppObjectBase(objectPointer);
             if (typeof(T).IsValueType)
                 return (T) UnboxMethod.MakeGenericMethod(typeof(T)).Invoke(nativeObject, new object[0]);
@@ -309,7 +311,7 @@ namespace UnhollowerBaseLib
             {
                 if (t.TypeHasIl2CppArrayBase())
                     return RenderTypeName(t.GetGenericArguments()[0]) + "[]";
-                
+
                 var builder = new StringBuilder();
                 builder.Append(t.GetGenericTypeDefinition().FullNameObfuscated().TrimIl2CppPrefix());
                 builder.Append('<');

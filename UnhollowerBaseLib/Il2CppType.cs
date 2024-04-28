@@ -1,3 +1,4 @@
+#if ENABLE_IL2CPP_SYSTEM
 using System;
 using UnhollowerBaseLib;
 
@@ -54,3 +55,4 @@ namespace UnhollowerRuntimeLib
         public static Il2CppSystem.Type Type => Il2CppType.Of<T>();
     }
 }
+#endif
